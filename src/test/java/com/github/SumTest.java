@@ -31,7 +31,7 @@ public class SumTest {
         }
         numberList = new ArrayList<>(SIZE);
         for (int i = 0; i < SIZE; i++) {
-            numberList.add(i);
+            numberList.add(i,i);
         }
     }
 
