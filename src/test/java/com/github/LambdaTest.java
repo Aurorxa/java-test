@@ -34,7 +34,7 @@ public class LambdaTest {
                         LambdaTest.class
                                 .getClassLoader()
                                 .getResource("data.csv")
-                                .getFile())
+                                .toURI())
                 .toFile())) {
 
             count = csvRecordStream.count();

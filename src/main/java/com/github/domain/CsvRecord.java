@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-// @JsonPropertyOrder({ "name", "surname", "shoesize", "gender" })
+// @JsonPropertyOrder({ })
 public class CsvRecord {
 
     private String id;
@@ -32,7 +32,7 @@ public class CsvRecord {
     @JsonProperty("user_id")
     private String userId;
 
-    private int age;
+    private double age;
     private String sex;
     private String local;
 
