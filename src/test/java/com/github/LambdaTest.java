@@ -6,16 +6,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LambdaTest {
 
     private Stream<CsvRecord> stream;
-
-    private final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
     @Before
     public void before() throws Exception {
         stream = CsvReader.readCsvFile();
@@ -31,15 +29,11 @@ public class LambdaTest {
     public void testAnalyzeOrderByMonth() {
         Map<String, Long> map = stream.collect(Collectors.groupingBy(( csv) -> {
                     LocalDateTime eventTime = csv.getEventTime();
-                    int year = eventTime
-                            .getYear();
-                    int month = eventTime
-                            .getMonthValue();
-                    return String.format("%d-%02d", year,month);
-        },Collectors.counting())) ;
+                    return String.format("%d-%02d", eventTime.getYear(), eventTime.getMonthValue());
+        },TreeMap::new, Collectors.counting())) ;
 
         map.forEach((key, value) -> {
-            System.out.println(key + "的订单数：" + value);
+            System.out.println(key + " 订单数：" + value);
         });
     }
 
