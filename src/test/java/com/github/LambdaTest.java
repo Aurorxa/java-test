@@ -5,8 +5,9 @@ import com.github.domain.CsvRecord;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.util.List;
+import java.nio.file.Path;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * @author 许大仙
@@ -25,12 +26,21 @@ public class LambdaTest {
 
     @Test
     public void testReadCsvFile() throws Exception {
-        // 准备一个测试文件 data.csv
-        File file = new File("src/test/resources/data.csv");
 
-        List<CsvRecord> records = csvReader.readCsvFile(file);
 
-        System.out.println("records = " + records);
+        long count = 0;
+        try (Stream<CsvRecord> csvRecordStream = csvReader.readCsvFile(Path
+                .of(
+                        LambdaTest.class
+                                .getClassLoader()
+                                .getResource("data.csv")
+                                .getFile())
+                .toFile())) {
+
+            count = csvRecordStream.count();
+        }
+
+        System.out.println("count = " + count);
 
     }
 
