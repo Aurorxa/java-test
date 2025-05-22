@@ -19,8 +19,10 @@ import java.util.stream.IntStream;
 @Measurement(iterations = 5, time = 1)
 public class ParallelTest {
 
-    private static final int SIZE = 10000 ;
+    private static final int SIZE = 1000000;
     private int[] numbers;
+
+    private ExecutorService service;
 
     @Setup
     public void setup() {
@@ -30,6 +32,16 @@ public class ParallelTest {
                     .current()
                     .nextInt(100_000);
         }
+
+        service = Executors.newFixedThreadPool(
+                Math.max(1, Runtime
+                        .getRuntime()
+                        .availableProcessors()));
+    }
+
+    @TearDown
+    public void tearDown() {
+        service.shutdown();
     }
 
     /**
@@ -74,36 +86,27 @@ public class ParallelTest {
      */
     @Benchmark
     public int custom() throws ExecutionException, InterruptedException {
-        final int SIZE = numbers.length;
-        final int threadCount = Math.min(Runtime.getRuntime().availableProcessors() + 1, SIZE);
-        final int step = (int) Math.ceil((double) SIZE / threadCount);
-        ExecutorService service = Executors.newFixedThreadPool(threadCount);
-        List<Future<Integer>> futures = new ArrayList<>();
+        int SIZE = numbers.length;
+        int threadCount = Runtime.getRuntime().availableProcessors();
+        int chunk = (SIZE + threadCount - 1) / threadCount;
 
-        for (int j = 0; j < SIZE; j += step) {
-            final int start = j;
-            final int end = Math.min(j + step, SIZE);
+        List<Future<Integer>> futures = new ArrayList<>(threadCount);
+        for (int start = 0; start < SIZE; start += chunk) {
+            int end = Math.min(start + chunk, SIZE);
+            int finalStart = start;
             futures.add(service.submit(() -> {
-                int localMax = Integer.MIN_VALUE;
-                for (int i = start; i < end; i++) {
-                    if (numbers[i] > localMax) {
-                        localMax = numbers[i];
-                    }
+                int localMax = numbers[finalStart];
+                for (int i = finalStart + 1; i < end; i++) {
+                    if (numbers[i] > localMax) localMax = numbers[i];
                 }
                 return localMax;
             }));
         }
 
         int max = Integer.MIN_VALUE;
-        for (Future<Integer> future : futures) {
-            int partialMax = future.get();
-            if (partialMax > max) {
-                max = partialMax;
-            }
+        for (Future<Integer> f : futures) {
+            max = Math.max(max, f.get());
         }
-
-        service.shutdown();
-
         return max;
     }
 

@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 @Measurement(iterations = 5, time = 1)
 public class SumTest {
 
-    private static final int SIZE = 100;
+    private static final int SIZE = 1000000 ;
     private int[] numbers;
     private List<Integer> numberList;
 
