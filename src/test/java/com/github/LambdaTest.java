@@ -5,43 +5,44 @@ import com.github.domain.CsvRecord;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.file.Path;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * @author 许大仙
- * @version 1.0
- * @since 2025-05-22 16:23
- */
 public class LambdaTest {
 
-    private CsvReader csvReader;
+    private Stream<CsvRecord> stream;
 
+    private final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
     @Before
-    public void setUp() throws Exception {
-        // 初始化 CsvReader 对象
-        csvReader = new CsvReader();
+    public void before() throws Exception {
+        stream = CsvReader.readCsvFile();
     }
 
     @Test
-    public void testReadCsvFile() throws Exception {
-
-
-        long count = 0;
-        try (Stream<CsvRecord> csvRecordStream = csvReader.readCsvFile(Path
-                .of(
-                        LambdaTest.class
-                                .getClassLoader()
-                                .getResource("data.csv")
-                                .toURI())
-                .toFile())) {
-
-            count = csvRecordStream.count();
-        }
-
+    public void testCount() {
+        long count = stream.count();
         System.out.println("count = " + count);
-
     }
+
+    @Test
+    public void testAnalyzeOrderByMonth() {
+        Map<String, Long> map = stream.collect(Collectors.groupingBy(( csv) -> {
+                    LocalDateTime eventTime = csv.getEventTime();
+                    int year = eventTime
+                            .getYear();
+                    int month = eventTime
+                            .getMonthValue();
+                    return String.format("%d-%02d", year,month);
+        },Collectors.counting())) ;
+
+        map.forEach((key, value) -> {
+            System.out.println(key + "的订单数：" + value);
+        });
+    }
+
+
 
 }
