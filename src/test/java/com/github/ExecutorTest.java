@@ -13,17 +13,19 @@ import java.util.stream.Collectors;
 public class ExecutorTest {
 
     public static void monthAnalysis() throws Exception {
-        Map<String, Long> map = CsvReader.readCsvFile().collect(Collectors.groupingBy(
-                (csv) -> {
-                    LocalDateTime eventTime = csv.getEventTime();
-                    return YearMonth
-                            .from(eventTime)
-                            .toString();
-                },
-                TreeMap::new,
-                Collectors.counting()));
+        Map<String, Long> map = CsvReader
+                .readCsvFile()
+                .collect(Collectors.groupingBy(
+                        (csv) -> {
+                            LocalDateTime eventTime = csv.getEventTime();
+                            return YearMonth
+                                    .from(eventTime)
+                                    .toString();
+                        },
+                        TreeMap::new,
+                        Collectors.counting()));
 
-        map.forEach((key, value) -> System.out.println(key + " 的订单数是：" + value));
+        map.forEach((key, value) -> log.info("{} 的订单数是：{}", key, value));
     }
 
     public static void main(String[] args) throws Exception {
