@@ -9,7 +9,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Spliterator;
@@ -19,7 +21,7 @@ import java.util.stream.StreamSupport;
 
 public class CsvReader {
 
-    public static Stream<CsvRecord> readCsvFile() throws Exception {
+    public static Stream<CsvRecord> readCsvFile() throws URISyntaxException, IOException {
         final CsvMapper mapper = new CsvMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
