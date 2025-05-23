@@ -31,7 +31,7 @@ public class ExecutorTest {
     public static void main(String[] args) throws Exception {
         log.info("开始统计");
         monthAnalysis();
-        log.info("执行其它操作");
+        log.info("执行其它操作...");
     }
 
 }
