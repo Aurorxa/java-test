@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -17,7 +18,7 @@ public class ExecutorTest {
     /**
      * 月度分析（非常耗时）
      */
-    public static Map<String, Long> monthAnalysis() throws Exception {
+    public static void monthAnalysis(Consumer<Map<String, Long>> consumer) throws Exception {
         Map<String, Long> map = CsvReader
                 .readCsvFile()
                 .collect(Collectors.groupingBy(
@@ -31,7 +32,8 @@ public class ExecutorTest {
                         Collectors.counting()));
 
         log.info("{}", map.size());
-        return map;
+
+        consumer.accept(map);
     }
 
     public static void main(String[] args) throws Exception {
@@ -39,40 +41,25 @@ public class ExecutorTest {
         try {
             executorService = Executors.newFixedThreadPool(3);
             log.info("开始统计");
-            final Future<Map<String, Long>> submitFuture1 = executorService.submit(() -> {
+            executorService.submit(() -> {
                 try {
-                    return monthAnalysis();
+                    monthAnalysis(map -> {
+                        log.info("{}", map.size());
+                    });
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             });
-            final Future<Map<String, Long>> submitFuture2 = executorService.submit(() -> {
+            executorService.submit(() -> {
                 try {
-                    return monthAnalysis();
+                    monthAnalysis(map -> {
+                        log.info("{}", map.size());
+                    });
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             });
             log.info("执行其它操作...");
-            try {
-                // 阻塞等待任务完成
-                final Map<String, Long> map1 = submitFuture1.get();
-                log.info("{}", map1.size());
-            } catch (ExecutionException e) {
-                System.err.println("任务执行异常: " + e
-                        .getCause()
-                        .getMessage());
-            }
-            try {
-                // 阻塞等待任务完成
-                final Map<String, Long> map2 = submitFuture2.get();
-                log.info("{}", map2.size());
-            } catch (ExecutionException e) {
-                System.err.println("任务执行异常: " + e
-                        .getCause()
-                        .getMessage());
-            }
-            log.info("执行其它操作2...");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
