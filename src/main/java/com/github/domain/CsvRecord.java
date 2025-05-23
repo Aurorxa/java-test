@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
         "sex", "local"})
 public class CsvRecord {
 
+    @JsonProperty("id")
     private String id;
 
     @JsonProperty("event_time")
@@ -36,14 +37,22 @@ public class CsvRecord {
     @JsonProperty("category_code")
     private String categoryCode;
 
+    @JsonProperty("brand")
     private String brand;
+
+    @JsonProperty("price")
     private double price;
 
     @JsonProperty("user_id")
     private String userId;
 
+    @JsonProperty("age")
     private double age;
+
+    @JsonProperty("sex")
     private String sex;
+
+    @JsonProperty("local")
     private String local;
 
 }

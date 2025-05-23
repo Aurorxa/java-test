@@ -6,8 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.TreeMap;
+import java.time.YearMonth;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,9 +31,9 @@ public class LambdaTest {
         Map<String, Long> map = stream.collect(Collectors.groupingBy(
                 (csv) -> {
                     LocalDateTime eventTime = csv.getEventTime();
-                    int year = eventTime.getYear();
-                    int month = eventTime.getMonthValue();
-                    return String.format("%d-%02d", year, month);
+                    return YearMonth
+                            .from(eventTime)
+                            .toString();
                 },
                 TreeMap::new,
                 Collectors.counting()));
@@ -41,5 +41,89 @@ public class LambdaTest {
         map.forEach((key, value) -> System.out.println(key + " 的订单数是：" + value));
     }
 
+    @Test
+    public void testAnalyzeMaxOrderByMonth() {
+        // 先根据月份分组统计，获取 月份 -- 个数
+        Map<String, Long> map = stream.collect(Collectors.groupingBy(
+                (csv) -> {
+                    LocalDateTime eventTime = csv.getEventTime();
+                    return YearMonth
+                            .from(eventTime)
+                            .toString();
+                },
+                Collectors.counting()));
+
+        // 对 Map 进行排序，获取最大值
+        Optional<Map.Entry<String, Long>> optional = map
+                .entrySet()
+                .stream()
+                // .max(Comparator.comparingLong(Map.Entry::getValue));
+                .max(Map.Entry.comparingByValue());
+
+        optional.ifPresent(me -> System.out.println(me.getKey() + " 的订单数是：" + me.getValue()));
+    }
+
+    @Test
+    public void testAnalyzeMaxOrderByProduct() {
+        // 先根据 productId 分组统计，获取 productId -- 个数
+        Map<String, Long> map = stream.collect(Collectors.groupingBy(
+                CsvRecord::getProductId,
+                Collectors.counting()));
+
+        // 对 Map 进行排序，获取最大值
+        Optional<Map.Entry<String, Long>> optional = map
+                .entrySet()
+                .stream()
+                // .max(Comparator.comparingLong(Map.Entry::getValue));
+                .max(Map.Entry.comparingByValue());
+
+        optional.ifPresent(me -> System.out.println(me.getKey() + " 的订单数是：" + me.getValue()));
+    }
+
+    @Test
+    public void testAnalyzeMaxOrderByUserTop10() {
+        // 先根据 userId 分组统计，获取 userId -- 个数
+        Map<String, Long> map = stream.collect(Collectors.groupingBy(
+                CsvRecord::getUserId,
+                Collectors.counting()));
+
+        // 对 使用 LinkedHashMap 收集，会自动保持排序
+        Map<String, Long> me = map
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(10)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldVal, newVal) -> oldVal,
+                        LinkedHashMap::new
+                ));
+
+        me.forEach((key, value) -> System.out.println(key + " 的订单数是：" + value));
+    }
+
+    @Test
+    public void testAnalyzeMaxOrderByArea() {
+        // 根据地区分组，再根据用户分组，获取每个地区每个用户的订单数
+        Map<String, Map<String, Long>> map = stream.collect(Collectors.groupingBy(
+                CsvRecord::getLocal,
+                Collectors.groupingBy(CsvRecord::getUserId, Collectors.counting())));
+
+        // 对每个地区用户的订单数求最大值
+        Map<String, Optional<Map.Entry<String, Long>>> me = map
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .max(Map.Entry.comparingByValue())));
+        // 遍历数组
+        me.forEach((area, entry) -> {
+            Map.Entry<String, Long> m = entry.orElse(new AbstractMap.SimpleEntry<>("", 0L));
+            System.out.printf("地区：%s，下单最多的用户id：%s，订单数是：%s \n", area, m.getKey(), m.getValue());
+        });
+    }
 
 }
