@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 public class LambdaTest {
 
     private Stream<CsvRecord> stream;
+
     @Before
     public void before() throws Exception {
         stream = CsvReader.readCsvFile();
@@ -27,16 +28,16 @@ public class LambdaTest {
 
     @Test
     public void testAnalyzeOrderByMonth() {
-        Map<String, Long> map = stream.collect(Collectors.groupingBy(( csv) -> {
+        Map<String, Long> map = stream.collect(Collectors.groupingBy(
+                (csv) -> {
                     LocalDateTime eventTime = csv.getEventTime();
                     return String.format("%d-%02d", eventTime.getYear(), eventTime.getMonthValue());
-        },TreeMap::new, Collectors.counting())) ;
+                },
+                TreeMap::new,
+                Collectors.counting()));
 
-        map.forEach((key, value) -> {
-            System.out.println(key + " 订单数：" + value);
-        });
+        map.forEach((key, value) -> System.out.println(key +" "+ value));
     }
-
 
 
 }
