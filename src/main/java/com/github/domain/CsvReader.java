@@ -25,28 +25,34 @@ public class CsvReader {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.enable(CsvParser.Feature.SKIP_EMPTY_LINES);
         mapper.disable(CsvParser.Feature.TRIM_SPACES);
-        CsvSchema schema = mapper.schemaFor(CsvRecord.class).withHeader();
+        CsvSchema schema = mapper
+                .schemaFor(CsvRecord.class)
+                .withHeader();
         Reader reader = new FileReader(Path
-                .of(
-                        Objects
-                                .requireNonNull(CsvReader.class
+                .of(Objects
+                        .requireNonNull(
+                                CsvReader.class
                                         .getClassLoader()
                                         .getResource("data.csv"))
-                                .toURI())
+                        .toURI())
                 .toFile());
         MappingIterator<CsvRecord> iterator =
-                mapper.readerFor(CsvRecord.class).with(schema).readValues(reader);
+                mapper
+                        .readerFor(CsvRecord.class)
+                        .with(schema)
+                        .readValues(reader);
 
         // 将 MappingIterator 转换为 Stream
         Spliterator<CsvRecord> spliterator =
                 Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED);
 
         return StreamSupport
-                .stream(spliterator, false)
+                .stream(spliterator, true)
                 .onClose(() -> {
                     try {
                         reader.close();
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
                 });
     }
 }

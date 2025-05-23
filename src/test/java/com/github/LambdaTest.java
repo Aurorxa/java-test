@@ -31,12 +31,14 @@ public class LambdaTest {
         Map<String, Long> map = stream.collect(Collectors.groupingBy(
                 (csv) -> {
                     LocalDateTime eventTime = csv.getEventTime();
-                    return String.format("%d-%02d", eventTime.getYear(), eventTime.getMonthValue());
+                    int year = eventTime.getYear();
+                    int month = eventTime.getMonthValue();
+                    return String.format("%d-%02d", year, month);
                 },
                 TreeMap::new,
                 Collectors.counting()));
 
-        map.forEach((key, value) -> System.out.println(key +" "+ value));
+        map.forEach((key, value) -> System.out.println(key + " 的订单数是：" + value));
     }
 
 
