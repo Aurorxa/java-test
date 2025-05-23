@@ -119,7 +119,7 @@ public class LambdaTest {
                         .entrySet()
                         .stream()
                         .max(Map.Entry.comparingByValue())));
-        // 遍历数组
+        // 遍历 Map
         me.forEach((area, entry) -> {
             Map.Entry<String, Long> m = entry.orElse(new AbstractMap.SimpleEntry<>("", 0L));
             System.out.printf("地区：%s，下单最多的用户id：%s，订单数是：%s \n", area, m.getKey(), m.getValue());
